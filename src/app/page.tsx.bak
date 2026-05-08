@@ -167,7 +167,7 @@ export default function HomePage() {
                 alt="Mekanik profesional FixIt"
                 fill
                 style={{ objectFit: "cover", objectPosition: "center top" }}
-                unoptimized
+                priority
               />
               <div className="lp-hero__img-overlay" />
             </div>
@@ -221,12 +221,12 @@ export default function HomePage() {
           </div>
           <div className="lp-services__grid">
             {services.map((s, i) => (
-              <Link key={i} href="/register" className="lp-service-card" style={{ "--card-color": s.color } as React.CSSProperties}>
+              <div key={i} className="lp-service-card" style={{ "--card-color": s.color } as React.CSSProperties}>
                 <div className="lp-service-card__icon">{s.icon}</div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
                 <div className="lp-service-card__arrow"><ArrowRight size={16} /></div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
