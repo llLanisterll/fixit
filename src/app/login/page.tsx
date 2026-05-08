@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Wrench, Mail, Lock } from "lucide-react";
+import { Wrench, Mail, Lock, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -40,6 +40,13 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
+      {/* Tombol Kembali yang lebih rapi */}
+      <div style={{ position: "absolute", top: "32px", left: "32px", zIndex: 10 }}>
+        <Link href="/" className="lp-btn lp-btn--ghost" style={{ padding: "8px 16px", borderRadius: "8px", fontSize: "13px" }}>
+          <ArrowLeft size={16} /> Kembali ke Beranda
+        </Link>
+      </div>
+
       <div className="auth-card">
         <div style={{ textAlign: "center", marginBottom: "8px" }}>
           <Link href="/" className="landing-logo" style={{ justifyContent: "center", marginBottom: "16px" }}>
