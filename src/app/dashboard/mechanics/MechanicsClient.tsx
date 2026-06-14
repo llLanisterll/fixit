@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createMechanic, updateMechanic, deleteMechanic } from "@/actions/admin";
-import { Users, Plus, Edit, Trash2 } from "lucide-react";
+import { Users, Plus, Edit, Trash2, X } from "lucide-react";
 
 export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
 
@@ -13,6 +15,7 @@ export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
     const data = { name: fd.get("name") as string, phone: fd.get("phone") as string, specialization: fd.get("specialization") as string, status: fd.get("status") as string || "AVAILABLE" };
     if (editing) { await updateMechanic(editing.id, data); setEditing(null); }
     else { await createMechanic(data); }
+    router.refresh();
     setShowForm(false);
   }
 
@@ -33,7 +36,7 @@ export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
             <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px" }}>📞 {m.phone || "-"} • 📋 {m._count?.bookings || 0} booking</div>
             <div className="flex gap-2">
               <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(m); setShowForm(true); }}><Edit size={14} /> Edit</button>
-              <button className="btn btn-danger btn-sm" onClick={() => { if (confirm("Hapus mekanik ini?")) deleteMechanic(m.id); }}><Trash2 size={14} /></button>
+              <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm("Hapus mekanik ini?")) { await deleteMechanic(m.id); router.refresh(); } }}><Trash2 size={14} /></button>
             </div>
           </div>
         ))}
@@ -41,6 +44,7 @@ export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
       {showForm && (
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowForm(false)} aria-label="Close modal"><X size={18} /></button>
             <h2>{editing ? "Edit Mekanik" : "Tambah Mekanik"}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group"><label className="form-label">Nama</label><input name="name" className="form-input" defaultValue={editing?.name} required /></div>

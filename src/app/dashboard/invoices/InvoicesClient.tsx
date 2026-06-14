@@ -1,10 +1,22 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { markInvoicePaid } from "@/actions/admin";
-import { FileText, Eye, CheckCircle } from "lucide-react";
+import { FileText, Eye, CheckCircle, X } from "lucide-react";
 
 export default function InvoicesClient({ invoices }: { invoices: any[] }) {
+  const router = useRouter();
   const [detail, setDetail] = useState<any>(null);
+
+  // Sync modal view when props change
+  useEffect(() => {
+    if (detail) {
+      const updated = invoices.find(inv => inv.id === detail.id);
+      if (updated) {
+        setDetail(updated);
+      }
+    }
+  }, [invoices]);
 
   return (
     <>
@@ -24,7 +36,10 @@ export default function InvoicesClient({ invoices }: { invoices: any[] }) {
                   <div className="flex gap-2">
                     <button className="btn btn-secondary btn-sm" onClick={() => setDetail(inv)}><Eye size={14} /> Detail</button>
                     {inv.paymentStatus === "UNPAID" && (
-                      <button className="btn btn-success btn-sm" onClick={() => markInvoicePaid(inv.id, "Transfer Bank")}><CheckCircle size={14} /> Bayar</button>
+                      <button className="btn btn-success btn-sm" onClick={async () => {
+                        await markInvoicePaid(inv.id, "Transfer Bank");
+                        router.refresh();
+                      }}><CheckCircle size={14} /> Bayar</button>
                     )}
                   </div>
                 </td>
@@ -36,6 +51,7 @@ export default function InvoicesClient({ invoices }: { invoices: any[] }) {
       {detail && (
         <div className="modal-overlay" onClick={() => setDetail(null)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setDetail(null)} aria-label="Close modal"><X size={18} /></button>
             <h2>Invoice: {detail.invoiceNumber}</h2>
             <div className="detail-grid mb-6">
               <div className="detail-item"><div className="label">Booking</div><div className="value">{detail.booking.bookingCode}</div></div>

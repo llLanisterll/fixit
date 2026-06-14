@@ -39,7 +39,7 @@ export function DashboardCharts({ bookingStats, revenueStats }: { bookingStats: 
               <Tooltip
                 contentStyle={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", color: "var(--text-primary)" }}
                 itemStyle={{ color: "var(--green)" }}
-                formatter={(value: number) => [`Rp ${value.toLocaleString("id-ID")}`, "Pendapatan"]}
+                formatter={(value: any) => [`Rp ${Number(value || 0).toLocaleString("id-ID")}`, "Pendapatan"]}
               />
               <Area type="monotone" dataKey="revenue" stroke="var(--green)" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" name="Pendapatan" />
             </AreaChart>

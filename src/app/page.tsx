@@ -23,6 +23,8 @@ import {
   Gauge,
   Menu,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -31,6 +33,29 @@ export default function HomePage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const statsRef = useRef<HTMLDivElement>(null);
   const [statsVisible, setStatsVisible] = useState(false);
+  const [isLight, setIsLight] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme") === "light";
+    setIsLight(saved);
+    if (saved) {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newVal = !isLight;
+    setIsLight(newVal);
+    if (newVal) {
+      document.body.classList.add("light");
+      localStorage.setItem("theme", "light");
+    } else {
+      document.body.classList.remove("light");
+      localStorage.setItem("theme", "dark");
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -90,6 +115,14 @@ export default function HomePage() {
           </div>
 
           <div className="lp-nav__actions">
+            <button 
+              onClick={toggleTheme} 
+              className="lp-btn lp-btn--ghost" 
+              style={{ padding: "10px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}
+              aria-label="Toggle Theme"
+            >
+              {isLight ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
             <Link href="/login" className="lp-btn lp-btn--ghost">Masuk</Link>
             <Link href="/register" className="lp-btn lp-btn--primary">
               Daftar Gratis <ArrowRight size={14} />
@@ -108,6 +141,13 @@ export default function HomePage() {
             <a href="#about" onClick={() => setMobileOpen(false)}>Tentang</a>
             <a href="#team" onClick={() => setMobileOpen(false)}>Tim</a>
             <a href="#booking" onClick={() => setMobileOpen(false)}>Booking</a>
+            <button 
+              onClick={toggleTheme} 
+              className="lp-btn lp-btn--ghost" 
+              style={{ width: "100%", justifyContent: "center", gap: "8px", margin: "4px 0" }}
+            >
+              {isLight ? <><Moon size={16} /> Mode Gelap</> : <><Sun size={16} /> Mode Terang</>}
+            </button>
             <Link href="/login" className="lp-btn lp-btn--ghost" style={{ width: "100%", justifyContent: "center" }}>Masuk</Link>
             <Link href="/register" className="lp-btn lp-btn--primary" style={{ width: "100%", justifyContent: "center" }}>Daftar Gratis</Link>
           </div>

@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { simulatePayment } from "@/actions/customer";
 import { useToast } from "@/components/Toast";
 import { CreditCard } from "lucide-react";
 
 export default function PayInvoiceButton({ invoiceId }: { invoiceId: number }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
@@ -13,6 +15,7 @@ export default function PayInvoiceButton({ invoiceId }: { invoiceId: number }) {
     try {
       await simulatePayment(invoiceId);
       showToast("Pembayaran berhasil (Simulasi)", "success");
+      router.refresh();
     } catch (err) {
       showToast("Gagal melakukan pembayaran", "error");
     }

@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createSparepart, updateSparepart, deleteSparepart } from "@/actions/admin";
-import { Package, Plus, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { Package, Plus, Edit, Trash2, AlertTriangle, X } from "lucide-react";
 
 export default function SparepartsClient({ spareparts }: { spareparts: any[] }) {
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const lowStock = spareparts.filter(s => s.stock <= s.minStock);
@@ -14,6 +16,7 @@ export default function SparepartsClient({ spareparts }: { spareparts: any[] }) 
     const data = { name: fd.get("name") as string, partNumber: fd.get("partNumber") as string, brand: fd.get("brand") as string, stock: Number(fd.get("stock")), price: Number(fd.get("price")), unit: fd.get("unit") as string || "pcs", minStock: Number(fd.get("minStock")) };
     if (editing) { await updateSparepart(editing.id, data); setEditing(null); }
     else { await createSparepart(data); }
+    router.refresh();
     setShowForm(false);
   }
 
@@ -38,7 +41,7 @@ export default function SparepartsClient({ spareparts }: { spareparts: any[] }) 
                 <td>
                   <div className="flex gap-2">
                     <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(s); setShowForm(true); }}><Edit size={14} /></button>
-                    <button className="btn btn-danger btn-sm" onClick={() => { if (confirm("Hapus?")) deleteSparepart(s.id); }}><Trash2 size={14} /></button>
+                    <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm("Hapus?")) { await deleteSparepart(s.id); router.refresh(); } }}><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>
@@ -49,6 +52,7 @@ export default function SparepartsClient({ spareparts }: { spareparts: any[] }) 
       {showForm && (
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowForm(false)} aria-label="Close modal"><X size={18} /></button>
             <h2>{editing ? "Edit Sparepart" : "Tambah Sparepart"}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group"><label className="form-label">Nama</label><input name="name" className="form-input" defaultValue={editing?.name} required /></div>

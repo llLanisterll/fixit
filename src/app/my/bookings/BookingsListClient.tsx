@@ -1,14 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { cancelBooking } from "@/actions/bookings";
-import { CalendarCheck, Eye, XCircle, Check } from "lucide-react";
+import { CalendarCheck, Eye, XCircle, Check, X } from "lucide-react";
 
 const statusSteps = ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED"];
 const statusLabels: Record<string, string> = { PENDING: "Menunggu", CONFIRMED: "Dikonfirmasi", IN_PROGRESS: "Dikerjakan", COMPLETED: "Selesai", CANCELLED: "Dibatalkan" };
 
 export default function BookingsListClient({ bookings }: { bookings: any[] }) {
+  const router = useRouter();
   const [detail, setDetail] = useState<any>(null);
   const [filter, setFilter] = useState("ALL");
+
+  // Sync modal view when props change (after cancelBooking / refresh)
+  useEffect(() => {
+    if (detail) {
+      const updated = bookings.find(b => b.id === detail.id);
+      setDetail(updated || null);
+    }
+  }, [bookings]);
   const filtered = bookings.filter(b => filter === "ALL" || b.status === filter);
 
   return (
@@ -43,6 +53,7 @@ export default function BookingsListClient({ bookings }: { bookings: any[] }) {
       {detail && (
         <div className="modal-overlay" onClick={() => setDetail(null)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setDetail(null)} aria-label="Close modal"><X size={18} /></button>
             <h2>{detail.bookingCode}</h2>
             {/* Status Tracker */}
             {detail.status !== "CANCELLED" && (
@@ -50,12 +61,9 @@ export default function BookingsListClient({ bookings }: { bookings: any[] }) {
                 {statusSteps.map((s, i) => {
                   const currentIdx = statusSteps.indexOf(detail.status);
                   return (
-                    <div key={s} style={{ display: "contents" }}>
-                      <div className={`status-step ${i === currentIdx ? "active" : i < currentIdx ? "completed" : ""}`}>
-                        <div className="dot">{i < currentIdx ? <Check size={14} /> : i + 1}</div>
-                        <div className="label">{statusLabels[s]}</div>
-                      </div>
-                      {i < statusSteps.length - 1 && <div className={`status-line ${i < currentIdx ? "active" : ""}`} />}
+                    <div key={s} className={`status-step ${i === currentIdx ? "active" : i < currentIdx ? "completed" : ""}`}>
+                      <div className="dot">{i < currentIdx ? <Check size={14} /> : i + 1}</div>
+                      <div className="label">{statusLabels[s]}</div>
                     </div>
                   );
                 })}
@@ -86,7 +94,7 @@ export default function BookingsListClient({ bookings }: { bookings: any[] }) {
               </div>
             )}
             <div className="flex gap-2">
-              {detail.status === "PENDING" && <button className="btn btn-danger" onClick={async () => { await cancelBooking(detail.id); setDetail(null); }}><XCircle size={16} /> Batalkan</button>}
+              {detail.status === "PENDING" && <button className="btn btn-danger" onClick={async () => { await cancelBooking(detail.id); router.refresh(); }}><XCircle size={16} /> Batalkan</button>}
               <button className="btn btn-secondary" onClick={() => setDetail(null)}>Tutup</button>
             </div>
           </div>

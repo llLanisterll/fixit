@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { updateProfile } from "@/actions/profile";
 import { useToast } from "@/components/Toast";
 import { Edit } from "lucide-react";
 
 export default function EditProfileForm({ user }: { user: any }) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
@@ -23,6 +25,7 @@ export default function EditProfileForm({ user }: { user: any }) {
       showToast("Profil berhasil diperbarui", "success");
       setIsEditing(false);
       setPassword("");
+      router.refresh();
     }
     setLoading(false);
   }

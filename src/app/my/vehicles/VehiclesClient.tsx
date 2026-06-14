@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createVehicle, updateVehicle, deleteVehicle } from "@/actions/vehicles";
-import { Car, Plus, Edit, Trash2 } from "lucide-react";
+import { Car, Plus, Edit, Trash2, X } from "lucide-react";
 
 export default function VehiclesClient({ vehicles, userId }: { vehicles: any[]; userId: number }) {
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
 
@@ -13,6 +15,7 @@ export default function VehiclesClient({ vehicles, userId }: { vehicles: any[]; 
     const data = { brand: fd.get("brand") as string, model: fd.get("model") as string, year: Number(fd.get("year")), licensePlate: fd.get("licensePlate") as string, color: fd.get("color") as string };
     if (editing) { await updateVehicle(editing.id, data); setEditing(null); }
     else { await createVehicle({ ...data, userId }); }
+    router.refresh();
     setShowForm(false);
   }
 
@@ -35,7 +38,7 @@ export default function VehiclesClient({ vehicles, userId }: { vehicles: any[]; 
               <div style={{ padding: "10px 14px", background: "var(--bg-glass)", borderRadius: "var(--radius-sm)", marginBottom: "12px", fontFamily: "monospace", fontSize: "15px", fontWeight: 600, textAlign: "center" }}>{v.licensePlate}</div>
               <div className="flex gap-2">
                 <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(v); setShowForm(true); }}><Edit size={14} /> Edit</button>
-                <button className="btn btn-danger btn-sm" onClick={() => { if (confirm("Hapus kendaraan ini?")) deleteVehicle(v.id); }}><Trash2 size={14} /></button>
+                <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm("Hapus kendaraan ini?")) { await deleteVehicle(v.id); router.refresh(); } }}><Trash2 size={14} /></button>
               </div>
             </div>
           ))}
@@ -44,6 +47,7 @@ export default function VehiclesClient({ vehicles, userId }: { vehicles: any[]; 
       {showForm && (
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowForm(false)} aria-label="Close modal"><X size={18} /></button>
             <h2>{editing ? "Edit Kendaraan" : "Tambah Kendaraan"}</h2>
             <form onSubmit={handleSubmit}>
               <div className="grid-2">

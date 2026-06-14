@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { updateBookingStatus } from "@/actions/bookings";
 import { generateInvoice, createServiceLog } from "@/actions/admin";
-import { CalendarCheck, Search, Eye, Check, Play, XCircle, FileText, Plus } from "lucide-react";
+import { CalendarCheck, Search, Eye, Check, Play, XCircle, FileText, Plus, X } from "lucide-react";
 import { useToast } from "@/components/Toast";
 
 export default function BookingsClient({ bookings, mechanics, spareparts }: { bookings: any[]; mechanics: any[]; spareparts: any[] }) {
+  const router = useRouter();
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [detail, setDetail] = useState<any>(null);
@@ -16,6 +18,16 @@ export default function BookingsClient({ bookings, mechanics, spareparts }: { bo
   const [logQty, setLogQty] = useState(1);
   const [logStatus, setLogStatus] = useState("IN_PROGRESS");
   const [loadingLog, setLoadingLog] = useState(false);
+
+  // Sync modal view when props change (after router.refresh)
+  useEffect(() => {
+    if (detail) {
+      const updated = bookings.find(b => b.id === detail.id);
+      if (updated) {
+        setDetail(updated);
+      }
+    }
+  }, [bookings]);
 
   async function handleAddLog(e: React.FormEvent) {
     e.preventDefault();
@@ -37,8 +49,7 @@ export default function BookingsClient({ bookings, mechanics, spareparts }: { bo
       setLogDesc("");
       setLogPart("");
       setLogQty(1);
-      // Detail doesn't auto-update without refresh, we can close it or just let the user see it next time,
-      // but ideally we'd want to fetch updated data. For simplicity, we just notify success.
+      router.refresh();
     } catch (err) {
       showToast("Gagal menambahkan log", "error");
     }
@@ -94,12 +105,16 @@ export default function BookingsClient({ bookings, mechanics, spareparts }: { bo
                           let mechId = b.mechanicId;
                           if (action.next === "CONFIRMED" && !mechId && mechanics.length > 0) mechId = mechanics[0].id;
                           await updateBookingStatus(b.id, action.next, mechId || undefined);
+                          router.refresh();
                         }}>
                         {action.icon} {action.label}
                       </button>
                     ))}
                     {b.status === "COMPLETED" && !b.invoice && (
-                      <button className="btn btn-success btn-sm" onClick={() => generateInvoice(b.id)}><FileText size={14} /> Invoice</button>
+                      <button className="btn btn-success btn-sm" onClick={async () => {
+                        await generateInvoice(b.id);
+                        router.refresh();
+                      }}><FileText size={14} /> Invoice</button>
                     )}
                   </div>
                 </td>
@@ -111,12 +126,44 @@ export default function BookingsClient({ bookings, mechanics, spareparts }: { bo
       {detail && (
         <div className="modal-overlay" onClick={() => setDetail(null)}>
           <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setDetail(null)} aria-label="Close modal"><X size={18} /></button>
             <h2>Detail Booking: {detail.bookingCode}</h2>
             <div className="detail-grid mb-6">
               <div className="detail-item"><div className="label">Pelanggan</div><div className="value">{detail.user.name}</div></div>
               <div className="detail-item"><div className="label">Kendaraan</div><div className="value">{detail.vehicle.brand} {detail.vehicle.model} ({detail.vehicle.licensePlate})</div></div>
               <div className="detail-item"><div className="label">Tanggal</div><div className="value">{new Date(detail.bookingDate).toLocaleDateString("id-ID")} - {detail.timeSlot}</div></div>
-              <div className="detail-item"><div className="label">Mekanik</div><div className="value">{detail.mechanic?.name || "Belum ditugaskan"}</div></div>
+              <div className="detail-item">
+                <div className="label">Mekanik</div>
+                <div className="value">
+                  {detail.status === "COMPLETED" || detail.status === "CANCELLED" ? (
+                    detail.mechanic?.name || "Belum ditugaskan"
+                  ) : (
+                    <select
+                      className="form-input mt-2"
+                      style={{ padding: "6px 12px", fontSize: "13px" }}
+                      value={detail.mechanicId || ""}
+                      onChange={async (e) => {
+                        const val = e.target.value;
+                        const newMechId = val ? Number(val) : undefined;
+                        await updateBookingStatus(detail.id, detail.status, newMechId);
+                        showToast("Mekanik berhasil diperbarui", "success");
+                        router.refresh();
+                      }}
+                    >
+                      <option value="">Pilih Mekanik...</option>
+                      {(() => {
+                        const allOptions = [...mechanics];
+                        if (detail.mechanic && !allOptions.some(m => m.id === detail.mechanic.id)) {
+                          allOptions.push(detail.mechanic);
+                        }
+                        return allOptions.map(m => (
+                          <option key={m.id} value={m.id}>{m.name} ({m.specialization || "Umum"})</option>
+                        ));
+                      })()}
+                    </select>
+                  )}
+                </div>
+              </div>
               <div className="detail-item"><div className="label">Status</div><div className="value"><span className={`badge badge-${detail.status === "PENDING" ? "pending" : detail.status === "CONFIRMED" ? "confirmed" : detail.status === "IN_PROGRESS" ? "progress" : detail.status === "COMPLETED" ? "completed" : "cancelled"}`}>{detail.status}</span></div></div>
               {detail.notes && <div className="detail-item"><div className="label">Catatan</div><div className="value">{detail.notes}</div></div>}
             </div>
