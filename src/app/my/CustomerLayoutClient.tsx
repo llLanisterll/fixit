@@ -9,7 +9,7 @@ const customerLinks = [
   { href: "/my/dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
   { href: "/my/vehicles", icon: <Car size={18} />, label: "Kendaraan Saya" },
   { href: "/my/booking/new", icon: <Plus size={18} />, label: "Booking Baru" },
-  { href: "/my/bookings", icon: <CalendarCheck size={18} />, label: "Riwayat Booking" },
+  { href: "/my/bookings", icon: <CalendarCheck size={18} />, label: "Riwayat" },
   { href: "/my/invoices", icon: <FileText size={18} />, label: "Invoice" },
   { href: "/my/profile", icon: <UserCircle size={18} />, label: "Profil" },
 ];

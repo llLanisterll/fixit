@@ -2,19 +2,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { simulatePayment } from "@/actions/customer";
-import { useToast } from "@/components/Toast";
+import { useNotification } from "@/components/NotificationContext";
 import { CreditCard } from "lucide-react";
 
 export default function PayInvoiceButton({ invoiceId }: { invoiceId: number }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { showToast } = useToast();
+  const { showToast } = useNotification();
 
   async function handlePay() {
     setLoading(true);
     try {
       await simulatePayment(invoiceId);
-      showToast("Pembayaran berhasil (Simulasi)", "success");
+      showToast("Pembayaran berhasil", "success");
       router.refresh();
     } catch (err) {
       showToast("Gagal melakukan pembayaran", "error");
@@ -24,7 +24,7 @@ export default function PayInvoiceButton({ invoiceId }: { invoiceId: number }) {
 
   return (
     <button className="btn btn-primary btn-sm mt-2" onClick={handlePay} disabled={loading} style={{ width: "100%" }}>
-      {loading ? <span className="spinner" /> : <><CreditCard size={14} /> Simulasi Bayar</>}
+      {loading ? <span className="spinner" /> : <><CreditCard size={14} />Bayar</>}
     </button>
   );
 }

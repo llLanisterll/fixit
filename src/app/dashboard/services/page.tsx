@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import prisma from "@/lib/prisma";
 import ServicesClient from "./ServicesClient";
 export default async function ServicesPage() {

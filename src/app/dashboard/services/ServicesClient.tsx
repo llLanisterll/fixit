@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createService, updateService, deleteService } from "@/actions/admin";
 import { Settings, Plus, Edit, Trash2, X } from "lucide-react";
+import { useNotification } from "@/components/NotificationContext";
 
 export default function ServicesClient({ services }: { services: any[] }) {
   const router = useRouter();
+  const { showConfirm, showToast } = useNotification();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
 
@@ -39,7 +41,13 @@ export default function ServicesClient({ services }: { services: any[] }) {
                 <td>
                   <div className="flex gap-2">
                     <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(s); setShowForm(true); }}><Edit size={14} /></button>
-                    <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm("Hapus layanan ini?")) { await deleteService(s.id); router.refresh(); } }}><Trash2 size={14} /></button>
+                    <button className="btn btn-danger btn-sm" onClick={() => {
+                      showConfirm("Hapus Layanan?", "Apakah Anda yakin ingin menghapus layanan ini?", async () => {
+                        await deleteService(s.id);
+                        showToast("Layanan dihapus", "success");
+                        router.refresh();
+                      });
+                    }}><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>

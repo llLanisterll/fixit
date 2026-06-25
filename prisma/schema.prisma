@@ -17,8 +17,9 @@ model User {
   avatar    String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  bookings  Booking[]
-  vehicles  Vehicle[]
+  bookings      Booking[]
+  vehicles      Vehicle[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -145,4 +146,18 @@ model Invoice {
   booking       Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("invoices")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     // If null, it's for ADMIN
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  type      String   @default("INFO")
+  link      String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

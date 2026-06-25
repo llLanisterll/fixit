@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import prisma from "@/lib/prisma";
 import InvoicesClient from "./InvoicesClient";
 export default async function InvoicesPage() {

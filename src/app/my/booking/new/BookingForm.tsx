@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBooking } from "@/actions/bookings";
 import { CalendarCheck, Car, Wrench, Users, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { useNotification } from "@/components/NotificationContext";
 
-const timeSlots = ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00"];
+const timeSlots = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
 
 export default function BookingForm({ vehicles, services, mechanics, userId }: { vehicles: any[]; services: any[]; mechanics: any[]; userId: number }) {
   const router = useRouter();
+  const { showAlert } = useNotification();
   const [step, setStep] = useState(1);
   const [vehicleId, setVehicleId] = useState<number | null>(null);
   const [selectedServices, setSelectedServices] = useState<number[]>([]);
@@ -20,11 +22,36 @@ export default function BookingForm({ vehicles, services, mechanics, userId }: {
   const totalPrice = services.filter(s => selectedServices.includes(s.id)).reduce((sum, s) => sum + s.price, 0);
   const totalMinutes = services.filter(s => selectedServices.includes(s.id)).reduce((sum, s) => sum + s.estimatedMinutes, 0);
 
+  const getAvailableMechanics = () => {
+    if (selectedServices.length === 0) return mechanics;
+    const serviceNames = services.filter(s => selectedServices.includes(s.id)).map(s => s.name.toLowerCase());
+    
+    let neededSpecs = new Set<string>();
+    serviceNames.forEach(name => {
+      if (name.includes("mesin") || name.includes("oli") || name.includes("transmisi") || name.includes("kopling") || name.includes("v-belt") || name.includes("overhaul")) neededSpecs.add("Mesin & Transmisi");
+      if (name.includes("ac") || name.includes("aki") || name.includes("listrik")) neededSpecs.add("ECU & Elektronik");
+      if (name.includes("rem") || name.includes("spooring") || name.includes("balancing")) neededSpecs.add("Rem & Suspensi");
+    });
+    
+    if (neededSpecs.size === 0) return mechanics;
+    
+    return mechanics.filter(m => 
+      m.specialization === "Multi-Spesialis" || neededSpecs.has(m.specialization)
+    );
+  };
+  
+  const availableMechanics = getAvailableMechanics();
+
   async function handleSubmit() {
     if (!vehicleId || selectedServices.length === 0 || !bookingDate || !timeSlot) return;
     setLoading(true);
-    await createBooking({ userId, vehicleId, mechanicId: mechanicId || undefined, bookingDate, timeSlot, notes, serviceIds: selectedServices });
-    router.push("/my/bookings");
+    try {
+      await createBooking({ userId, vehicleId, mechanicId: mechanicId || undefined, bookingDate, timeSlot, notes, serviceIds: selectedServices });
+      router.push("/my/bookings");
+    } catch (e: any) {
+      showAlert("Gagal Membuat Booking", e.message || "Terjadi kesalahan saat memproses booking.", "error");
+      setLoading(false);
+    }
   }
 
   const steps = [
@@ -92,12 +119,9 @@ export default function BookingForm({ vehicles, services, mechanics, userId }: {
           <>
             <h3 style={{ marginBottom: "16px" }}>Pilih Jadwal & Mekanik</h3>
             <div className="grid-2 mb-6">
-              <div className="form-group"><label className="form-label">Tanggal Booking</label><input type="date" className="form-input" value={bookingDate} onChange={e => setBookingDate(e.target.value)} min={new Date().toISOString().split("T")[0]} required /></div>
+              <div className="form-group"><label className="form-label">Tanggal Booking</label><input type="date" className="form-input" value={bookingDate} onChange={e => setBookingDate(e.target.value)} required /></div>
               <div className="form-group"><label className="form-label">Jam</label>
-                <select className="form-input" value={timeSlot} onChange={e => setTimeSlot(e.target.value)} required>
-                  <option value="">Pilih jam...</option>
-                  {timeSlots.map(ts => <option key={ts} value={ts}>{ts}</option>)}
-                </select>
+                <input type="time" className="form-input" value={timeSlot} onChange={e => setTimeSlot(e.target.value)} required />
               </div>
             </div>
             <div className="form-group"><label className="form-label">Catatan (opsional)</label><textarea className="form-input" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Keluhan atau catatan tambahan..." /></div>
@@ -106,7 +130,7 @@ export default function BookingForm({ vehicles, services, mechanics, userId }: {
               <div className={`mechanic-card ${mechanicId === null ? "selected" : ""}`} onClick={() => setMechanicId(null)}>
                 <div className="avatar">🔄</div><h4>Otomatis</h4><p>Ditentukan bengkel</p>
               </div>
-              {mechanics.map(m => (
+              {availableMechanics.map(m => (
                 <div key={m.id} className={`mechanic-card ${mechanicId === m.id ? "selected" : ""}`} onClick={() => setMechanicId(m.id)}>
                   <div className="avatar">{m.name[0]}</div><h4>{m.name}</h4><p>{m.specialization || "Umum"}</p>
                 </div>
@@ -140,7 +164,12 @@ export default function BookingForm({ vehicles, services, mechanics, userId }: {
           {step > 1 && <button className="btn btn-secondary" onClick={() => setStep(step - 1)}><ChevronLeft size={16} /> Kembali</button>}
           <div style={{ marginLeft: "auto" }}>
             {step < 4 ? (
-              <button className="btn btn-primary" disabled={(step === 1 && !vehicleId) || (step === 2 && selectedServices.length === 0) || (step === 3 && (!bookingDate || !timeSlot))} onClick={() => setStep(step + 1)}>
+              <button className="btn btn-primary" onClick={() => {
+                if (step === 1 && !vehicleId) return showAlert("Perhatian", "Harap pilih kendaraan Anda terlebih dahulu", "warning");
+                if (step === 2 && selectedServices.length === 0) return showAlert("Perhatian", "Harap pilih minimal satu layanan", "warning");
+                if (step === 3 && (!bookingDate || !timeSlot)) return showAlert("Perhatian", "Tanggal dan Jam tidak boleh kosong", "warning");
+                setStep(step + 1);
+              }}>
                 Lanjut <ChevronRight size={16} />
               </button>
             ) : (

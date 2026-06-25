@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createVehicle, updateVehicle, deleteVehicle } from "@/actions/vehicles";
 import { Car, Plus, Edit, Trash2, X } from "lucide-react";
+import { useNotification } from "@/components/NotificationContext";
 
 export default function VehiclesClient({ vehicles, userId }: { vehicles: any[]; userId: number }) {
   const router = useRouter();
+  const { showConfirm, showToast } = useNotification();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
 
@@ -38,7 +40,13 @@ export default function VehiclesClient({ vehicles, userId }: { vehicles: any[]; 
               <div style={{ padding: "10px 14px", background: "var(--bg-glass)", borderRadius: "var(--radius-sm)", marginBottom: "12px", fontFamily: "monospace", fontSize: "15px", fontWeight: 600, textAlign: "center" }}>{v.licensePlate}</div>
               <div className="flex gap-2">
                 <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(v); setShowForm(true); }}><Edit size={14} /> Edit</button>
-                <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm("Hapus kendaraan ini?")) { await deleteVehicle(v.id); router.refresh(); } }}><Trash2 size={14} /></button>
+                <button className="btn btn-danger btn-sm" onClick={() => {
+                  showConfirm("Hapus Kendaraan?", "Apakah Anda yakin ingin menghapus kendaraan ini?", async () => {
+                    await deleteVehicle(v.id);
+                    showToast("Kendaraan dihapus", "success");
+                    router.refresh();
+                  });
+                }}><Trash2 size={14} /></button>
               </div>
             </div>
           ))}

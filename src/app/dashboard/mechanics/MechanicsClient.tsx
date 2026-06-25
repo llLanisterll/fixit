@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createMechanic, updateMechanic, deleteMechanic } from "@/actions/admin";
 import { Users, Plus, Edit, Trash2, X } from "lucide-react";
+import { useNotification } from "@/components/NotificationContext";
 
 export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
   const router = useRouter();
+  const { showConfirm, showToast } = useNotification();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
 
@@ -36,7 +38,13 @@ export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
             <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px" }}>📞 {m.phone || "-"} • 📋 {m._count?.bookings || 0} booking</div>
             <div className="flex gap-2">
               <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(m); setShowForm(true); }}><Edit size={14} /> Edit</button>
-              <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm("Hapus mekanik ini?")) { await deleteMechanic(m.id); router.refresh(); } }}><Trash2 size={14} /></button>
+              <button className="btn btn-danger btn-sm" onClick={() => {
+                showConfirm("Hapus Mekanik?", "Apakah Anda yakin ingin menghapus mekanik ini?", async () => {
+                  await deleteMechanic(m.id);
+                  showToast("Mekanik dihapus", "success");
+                  router.refresh();
+                });
+              }}><Trash2 size={14} /></button>
             </div>
           </div>
         ))}
@@ -49,7 +57,15 @@ export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
             <form onSubmit={handleSubmit}>
               <div className="form-group"><label className="form-label">Nama</label><input name="name" className="form-input" defaultValue={editing?.name} required /></div>
               <div className="form-group"><label className="form-label">No. Telepon</label><input name="phone" className="form-input" defaultValue={editing?.phone} /></div>
-              <div className="form-group"><label className="form-label">Spesialisasi</label><input name="specialization" className="form-input" defaultValue={editing?.specialization} /></div>
+              <div className="form-group">
+                <label className="form-label">Spesialisasi</label>
+                <select name="specialization" className="form-input" defaultValue={editing?.specialization || "Multi-Spesialis"}>
+                  <option value="Multi-Spesialis">Multi-Spesialis</option>
+                  <option value="Mesin & Transmisi">Mesin & Transmisi</option>
+                  <option value="ECU & Elektronik">ECU & Elektronik</option>
+                  <option value="Rem & Suspensi">Rem & Suspensi</option>
+                </select>
+              </div>
               {editing && (
                 <div className="form-group"><label className="form-label">Status</label>
                   <select name="status" className="form-input" defaultValue={editing?.status}><option value="AVAILABLE">Available</option><option value="BUSY">Busy</option><option value="OFF">Off</option></select>

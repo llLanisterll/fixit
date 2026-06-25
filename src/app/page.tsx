@@ -203,8 +203,8 @@ export default function HomePage() {
           <div className="lp-hero__image">
             <div className="lp-hero__img-wrap">
               <Image
-                src="/hero_mechanic.png"
-                alt="Mekanik profesional FixIt"
+                src="/header.jpeg"
+                alt="Foto Kelompok FixIt"
                 fill
                 style={{ objectFit: "cover", objectPosition: "center top" }}
                 unoptimized
@@ -341,13 +341,14 @@ export default function HomePage() {
           </div>
           <div className="lp-team__grid">
             {[
-              { name: "Budi Hartono", role: "Kepala Mekanik", exp: "15 Tahun", spec: "Mesin & Transmisi", img: "/mechanic1.png", rating: 4.9 },
-              { name: "Tim FixIt", role: "Mekanik Senior", exp: "10+ Tahun", spec: "Multi-Spesialis", img: "/team_mechanics.png", rating: 4.8 },
-              { name: "Joko Susanto", role: "Spesialis Kelistrikan", exp: "8 Tahun", spec: "ECU & Elektronik", img: "/mechanic2.png", rating: 4.9 },
+              { name: "Sarham San", role: "Kepala Mekanik", exp: "Tim FixIt", spec: "Mesin & Transmisi", img: "/personel_1.jpeg", rating: 5.0 },
+              { name: "Muh. Fathir Syabhan", role: "Mekanik Senior", exp: "Tim FixIt", spec: "Multi-Spesialis", img: "/personel_2.jpeg", rating: 5.0 },
+              { name: "Muh. Anugrah Ashary", role: "Spesialis Kelistrikan", exp: "Tim FixIt", spec: "ECU & Elektronik", img: "/personel_3.jpeg", rating: 5.0 },
+              { name: "Jonas Baka", role: "Spesialis Kaki-Kaki", exp: "Tim FixIt", spec: "Rem & Suspensi", img: "/personel_4.jpeg", rating: 5.0 },
             ].map((m, i) => (
               <div key={i} className="lp-team-card">
                 <div className="lp-team-card__img">
-                  <Image src={m.img} alt={m.name} fill style={{ objectFit: "cover", objectPosition: "center top" }} />
+                  <Image src={m.img} alt={m.name} fill style={{ objectFit: "cover", objectPosition: "center" }} />
                   <div className="lp-team-card__rating">
                     <Star size={12} fill="#f59e0b" color="#f59e0b" /> {m.rating}
                   </div>

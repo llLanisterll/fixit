@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSparepart, updateSparepart, deleteSparepart } from "@/actions/admin";
 import { Package, Plus, Edit, Trash2, AlertTriangle, X } from "lucide-react";
+import { useNotification } from "@/components/NotificationContext";
 
 export default function SparepartsClient({ spareparts }: { spareparts: any[] }) {
   const router = useRouter();
+  const { showConfirm, showToast } = useNotification();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const lowStock = spareparts.filter(s => s.stock <= s.minStock);
@@ -41,7 +43,13 @@ export default function SparepartsClient({ spareparts }: { spareparts: any[] }) 
                 <td>
                   <div className="flex gap-2">
                     <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(s); setShowForm(true); }}><Edit size={14} /></button>
-                    <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm("Hapus?")) { await deleteSparepart(s.id); router.refresh(); } }}><Trash2 size={14} /></button>
+                    <button className="btn btn-danger btn-sm" onClick={() => {
+                      showConfirm("Hapus Suku Cadang?", "Apakah Anda yakin ingin menghapus suku cadang ini?", async () => {
+                        await deleteSparepart(s.id);
+                        showToast("Suku cadang dihapus", "success");
+                        router.refresh();
+                      });
+                    }}><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>

@@ -2,15 +2,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Wrench, Mail, Lock, ArrowLeft } from "lucide-react";
+import { useNotification } from "@/components/NotificationContext";
 
 export default function LoginPage() {
-  const [error, setError] = useState("");
+  const { showAlert } = useNotification();
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    setError("");
     const form = new FormData(e.currentTarget);
     const res = await fetch("/api/auth/callback/credentials", {
       method: "POST",
@@ -25,7 +25,7 @@ export default function LoginPage() {
       redirect: false,
     });
     if (result?.error) {
-      setError("Email atau password salah");
+      showAlert("Login Gagal", "Email atau password yang Anda masukkan salah.", "error");
       setLoading(false);
     } else {
       // Check role to redirect
@@ -57,7 +57,6 @@ export default function LoginPage() {
         <h1>Selamat Datang</h1>
         <p className="subtitle">Masuk ke akun Anda untuk melanjutkan</p>
         <div className="card">
-          {error && <div className="auth-error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label"><Mail size={14} style={{ display: "inline", marginRight: "6px" }} />Email</label>

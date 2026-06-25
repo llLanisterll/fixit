@@ -2,22 +2,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateBookingStatus } from "@/actions/bookings";
-import { generateInvoice, createServiceLog } from "@/actions/admin";
+import { generateInvoice } from "@/actions/admin";
 import { CalendarCheck, Search, Eye, Check, Play, XCircle, FileText, Plus, X } from "lucide-react";
-import { useToast } from "@/components/Toast";
+import { NotificationProvider, useNotification } from "@/components/NotificationContext";
 
 export default function BookingsClient({ bookings, mechanics, spareparts }: { bookings: any[]; mechanics: any[]; spareparts: any[] }) {
   const router = useRouter();
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [detail, setDetail] = useState<any>(null);
-  const { showToast } = useToast();
-  
-  const [logDesc, setLogDesc] = useState("");
-  const [logPart, setLogPart] = useState("");
-  const [logQty, setLogQty] = useState(1);
-  const [logStatus, setLogStatus] = useState("IN_PROGRESS");
-  const [loadingLog, setLoadingLog] = useState(false);
+  const { showToast, showConfirm } = useNotification();
 
   // Sync modal view when props change (after router.refresh)
   useEffect(() => {
@@ -29,32 +23,7 @@ export default function BookingsClient({ bookings, mechanics, spareparts }: { bo
     }
   }, [bookings]);
 
-  async function handleAddLog(e: React.FormEvent) {
-    e.preventDefault();
-    if (!detail?.mechanicId) {
-      showToast("Mekanik belum ditugaskan!", "error");
-      return;
-    }
-    setLoadingLog(true);
-    try {
-      await createServiceLog({
-        bookingId: detail.id,
-        mechanicId: detail.mechanicId,
-        sparepartId: logPart ? Number(logPart) : undefined,
-        description: logDesc,
-        sparepartQty: logPart ? logQty : 0,
-        status: logStatus
-      });
-      showToast("Log berhasil ditambahkan", "success");
-      setLogDesc("");
-      setLogPart("");
-      setLogQty(1);
-      router.refresh();
-    } catch (err) {
-      showToast("Gagal menambahkan log", "error");
-    }
-    setLoadingLog(false);
-  }
+
 
   const filtered = bookings.filter(b => {
     if (filter !== "ALL" && b.status !== filter) return false;
@@ -200,44 +169,7 @@ export default function BookingsClient({ bookings, mechanics, spareparts }: { bo
               </>
             )}
 
-            {detail.status === "IN_PROGRESS" && (
-              <div style={{ background: "var(--bg-glass)", padding: "16px", borderRadius: "var(--radius-sm)", marginBottom: "20px" }}>
-                <h4 style={{ marginBottom: "12px", fontSize: "14px" }}>Tambah Log Pengerjaan</h4>
-                <form onSubmit={handleAddLog}>
-                  <div className="form-group">
-                    <label className="form-label">Deskripsi</label>
-                    <input className="form-input" value={logDesc} onChange={e => setLogDesc(e.target.value)} required placeholder="Misal: Ganti oli mesin" />
-                  </div>
-                  <div className="grid-2">
-                    <div className="form-group">
-                      <label className="form-label">Sparepart (Opsional)</label>
-                      <select className="form-input" value={logPart} onChange={e => setLogPart(e.target.value)}>
-                        <option value="">Tidak ada part</option>
-                        {spareparts.map(p => <option key={p.id} value={p.id} disabled={p.stock <= 0}>{p.name} (Stok: {p.stock})</option>)}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Jumlah</label>
-                      <input type="number" className="form-input" value={logQty} onChange={e => setLogQty(Number(e.target.value))} min={1} disabled={!logPart} />
-                    </div>
-                  </div>
-                  <div className="grid-2">
-                    <div className="form-group">
-                      <label className="form-label">Status</label>
-                      <select className="form-input" value={logStatus} onChange={e => setLogStatus(e.target.value)}>
-                        <option value="IN_PROGRESS">Proses</option>
-                        <option value="DONE">Selesai</option>
-                      </select>
-                    </div>
-                    <div className="form-group" style={{ display: "flex", alignItems: "flex-end" }}>
-                      <button type="submit" className="btn btn-primary w-full" disabled={loadingLog}>
-                        {loadingLog ? <span className="spinner" /> : <><Plus size={16} /> Tambah Log</>}
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            )}
+
 
             <button className="btn btn-secondary" onClick={() => setDetail(null)}>Tutup</button>
           </div>

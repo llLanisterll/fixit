@@ -2,14 +2,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateProfile } from "@/actions/profile";
-import { useToast } from "@/components/Toast";
+import { useNotification } from "@/components/NotificationContext";
 import { Edit } from "lucide-react";
 
 export default function EditProfileForm({ user }: { user: any }) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { showToast } = useToast();
+  const { showToast } = useNotification();
 
   const [name, setName] = useState(user.name);
   const [phone, setPhone] = useState(user.phone || "");

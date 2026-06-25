@@ -23,7 +23,7 @@ export default function BookingsListClient({ bookings }: { bookings: any[] }) {
 
   return (
     <>
-      <div className="page-header"><div><h1><CalendarCheck size={24} style={{ display: "inline", marginRight: "8px" }} />Riwayat Booking</h1><p>{bookings.length} booking</p></div></div>
+      <div className="page-header"><div><h1><CalendarCheck size={24} style={{ display: "inline", marginRight: "8px" }} />Riwayat</h1><p>{bookings.length} booking</p></div></div>
       <div className="flex gap-2 mb-4" style={{ flexWrap: "wrap" }}>
         {["ALL", "PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"].map(s => (
           <button key={s} className={`btn btn-sm ${filter === s ? "btn-primary" : "btn-secondary"}`} onClick={() => setFilter(s)}>{s === "ALL" ? "Semua" : statusLabels[s]}</button>
