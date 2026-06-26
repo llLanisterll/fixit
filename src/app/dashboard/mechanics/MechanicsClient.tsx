@@ -27,13 +27,16 @@ export default function MechanicsClient({ mechanics }: { mechanics: any[] }) {
         <div><h1><Users size={24} style={{ display: "inline", marginRight: "8px" }} />Kelola Mekanik</h1><p>{mechanics.length} mekanik terdaftar</p></div>
         <button className="btn btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}><Plus size={16} /> Tambah Mekanik</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "20px" }}>
         {mechanics.map(m => (
           <div key={m.id} className="card" style={{ position: "relative" }}>
             <div className="flex items-center gap-3 mb-4">
-              <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "18px" }}>{m.name[0]}</div>
-              <div><h3 style={{ fontSize: "16px", fontWeight: 600 }}>{m.name}</h3><p style={{ fontSize: "12px", color: "var(--text-muted)" }}>{m.specialization || "Umum"}</p></div>
-              <span className={`badge badge-${m.status.toLowerCase()}`} style={{ marginLeft: "auto" }}>{m.status}</span>
+              <div style={{ width: "48px", height: "48px", flexShrink: 0, borderRadius: "50%", background: "linear-gradient(135deg, var(--accent), var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "18px" }}>{m.name[0]}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ fontSize: "16px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.name}</h3>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.specialization || "Umum"}</p>
+              </div>
+              <span className={`badge badge-${m.status.toLowerCase()}`} style={{ flexShrink: 0 }}>{m.status}</span>
             </div>
             <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px" }}>📞 {m.phone || "-"} • 📋 {m._count?.bookings || 0} booking</div>
             <div className="flex gap-2">
